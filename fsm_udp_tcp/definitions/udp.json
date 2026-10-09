@@ -1,0 +1,15 @@
+{
+    "initial_state": "READY",
+    "states": {
+        "READY": {
+            "send": {
+                "action": "send_datagram",
+                "next_state": "READY"
+            },
+            "receive": {
+                "action": "receive_datagram",
+                "next_state": "READY"
+            }
+        }
+    }
+}

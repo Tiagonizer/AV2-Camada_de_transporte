@@ -1,0 +1,103 @@
+{
+    "initial_state": "CLOSED",
+    "states": {
+        "CLOSED": {
+            "listen": {
+                "action": "start_listening",
+                "next_state": "LISTEN"
+            },
+            "connect": {
+                "action": "send_SYN",
+                "next_state": "SYN_SENT"
+            },
+            "receive_data":{
+                "action": "send_RST",
+                "next_state": "CLOSED"
+            }
+        },
+        "LISTEN": {
+            "receive_SYN": {
+                "action": "send_SYN_ACK",
+                "next_state": "SYN_RCVD"
+            },
+            "close": {
+                "action": "close_connection",
+                "next_state": "CLOSED"
+            }
+        },
+        "SYN_SENT": {
+            "receive_SYN_ACK": {
+                "action": "send_ACK",
+                "next_state": "ESTABLISHED"
+            },
+            "receive_SYN": {
+                "action": "send_SYN_ACK",
+                "next_state": "SYN_RCVD"
+            },
+            "timeout": {
+                "action": "retransmit_SYN",
+                "next_state": "SYN_SENT"
+            }
+        },
+        "SYN_RCVD": {
+            "receive_ACK": {
+                "action": "establish_connection",
+                "next_state": "ESTABLISHED"
+            },
+            "timeout": {
+                "action": "retransmit_SYN_ACK",
+                "next_state": "SYN_RCVD"
+            }
+        },
+        "ESTABLISHED": {
+            "close": {
+                "action": "send_FIN",
+                "next_state": "FIN_WAIT_1"
+            },
+            "receive_FIN": {
+                "action": "send_ACK",
+                "next_state": "CLOSE_WAIT"
+            }
+        },
+        "FIN_WAIT_1": {
+            "receive_ACK": {
+                "action": "wait_for_FIN",
+                "next_state": "FIN_WAIT_2"
+            },
+            "receive_FIN": {
+                "action": "send_ACK",
+                "next_state": "CLOSING"
+            }
+        },
+        "FIN_WAIT_2": {
+            "receive_FIN": {
+                "action": "send_ACK",
+                "next_state": "TIME_WAIT"
+            }
+        },
+        "CLOSING": {
+            "receive_ACK": {
+                "action": "start_TIME_WAIT",
+                "next_state": "TIME_WAIT"
+            }
+        },
+        "TIME_WAIT": {
+            "timeout": {
+                "action": "close_connection",
+                "next_state": "CLOSED"
+            }
+        },
+        "CLOSE_WAIT": {
+            "close": {
+                "action": "send_FIN",
+                "next_state": "LAST_ACK"
+            }
+        },
+        "LAST_ACK": {
+            "receive_ACK": {
+                "action": "close_connection",
+                "next_state": "CLOSED"
+            }
+        }
+    }
+}
