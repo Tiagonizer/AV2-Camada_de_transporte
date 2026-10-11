@@ -1,84 +1,117 @@
-# Simulador de Redes Convergentes - FSM UDP/TCP
+# Simulador de Redes Convergentes — FSM UDP/TCP
 
-Trabalho da AV2 de Redes Convergentes (Camada de Transporte) - UNIFOR
+Trabalho da AV2 de Redes Convergentes — Camada de Transporte  
+Universidade de Fortaleza (UNIFOR)
 
 ## Equipe
 
-- Tiago Pascoal - Matrícula 2320491
-- Victor Menezes - Matrícula 2325183
+- Tiago Pascoal
+- Victor Menezes
 
 ## Sobre o projeto
 
-Simulador em Python que modela o comportamento dos protocolos UDP e TCP da camada de transporte usando máquinas de estados finitos (FSM), com um canal de comunicação que simula problemas reais de rede. O projeto ainda está em desenvolvimento.
+Simulador desenvolvido em Python para representar aspectos dos protocolos UDP e TCP da camada de transporte utilizando máquinas de estados finitos (FSM). O projeto inclui um canal de comunicação configurável, capaz de simular condições adversas de rede, e uma interface gráfica para acompanhar os testes.
 
-## O que já está implementado
+## Funcionalidades implementadas
 
-- Motor de FSM genérico (fsm_engine.py) que lê a definição dos estados e transições de arquivos JSON
-- FSM do UDP (estado READY, eventos send e receive)
-- FSM do TCP com 11 estados: CLOSED, LISTEN, SYN_SENT, SYN_RCVD, ESTABLISHED, FIN_WAIT_1, FIN_WAIT_2, CLOSING, TIME_WAIT, CLOSE_WAIT e LAST_ACK
-- Datagrama UDP com cálculo e validação de checksum
-- Segmento TCP com número de sequência, número de ACK e dados
-- Detecção de ACKs duplicados e Fast Retransmit no TCP
-- Canal de comunicação com perda, corrupção, duplicação, reordenação, atraso e semente (seed) configuráveis
-- Interface gráfica em Tkinter para controlar o simulador
-- Testes automatizados de cenários
+- Motor genérico de máquinas de estados finitos, com definições carregadas de arquivos JSON.
+- FSM UDP com estado `READY` e eventos de envio e recebimento.
+- FSM TCP com 11 estados, cobrindo estabelecimento, transferência e encerramento de conexão.
+- Datagrama UDP com cálculo e validação de checksum.
+- Segmentos TCP com números de sequência, ACKs e dados.
+- Reconhecimento cumulativo de dados e controle de segmentos pendentes.
+- Detecção de ACKs duplicados e preparação de retransmissão rápida após três ACKs duplicados.
+- Preparação de retransmissão após timeout.
+- Estimativa de RTT e cálculo do intervalo de timeout.
+- Canal configurável para perda, corrupção, duplicação, reordenação e atraso.
+- Semente aleatória configurável para testes reproduzíveis.
+- Interface gráfica em Tkinter.
+- Testes automatizados para os principais cenários de UDP e TCP.
+
+**Status dos testes:** 14 testes automatizados passaram na última execução registrada. A retransmissão rápida é verificada por teste, mas sua transmissão efetiva pelo canal após três ACKs duplicados ainda precisa de validação integrada.
 
 ## Estrutura do projeto
 
-~~~
+```text
 fsm_udp_tcp/
-├── main.py                  # roteiro de demonstração dos cenários
-├── fsm_engine.py            # motor de máquina de estados
-├── channel.py               # canal com perda, corrupção, duplicação e reordenação
+├── main.py
+├── fsm_engine.py
+├── channel.py
 ├── definitions/
-│   ├── tcp.json             # estados e transições do TCP
-│   └── udp.json             # estados e transições do UDP
+│   ├── tcp.json
+│   └── udp.json
 ├── protocols/
-│   ├── tcp.py               # TCP e segmento TCP
-│   └── udp.py               # datagrama UDP e checksum
+│   ├── tcp.py
+│   └── udp.py
 ├── gui/
-│   └── app.py               # interface gráfica (Tkinter)
+│   └── app.py
 └── tests/
-    └── tests_scenarios.py   # testes automatizados
-~~~
+    ├── tests_scenarios.py
+    └── test_tcp_channel.py
+```
+
+## Requisitos
+
+- Python 3
+- Tkinter, normalmente incluído nas instalações do Python para desktop
 
 ## Como executar
 
-Requisito: Python 3 (o Tkinter já vem com a instalação padrão do Python).
+Abra o terminal na pasta `fsm_udp_tcp`.
 
-1. Entre na pasta do código:
+Executar a demonstração:
 
-   cd fsm_udp_tcp
-2. Rodar a demonstração no terminal (cenários de UDP, handshake, perda de SYN e SYN-ACK, fechamento normal e simultâneo, ACK duplicado, etc.):
+```bash
+python main.py
+```
 
-   python main.py
-3. Abrir a interface gráfica:
+Abrir a interface gráfica:
 
-   python gui/app.py
-4. Rodar os testes automatizados:
+```bash
+python gui/app.py
+```
 
-   python -m unittest discover -s tests -p "tests_scenarios.py"
+Executar os testes automatizados:
 
-Observação: o main.py usa caminhos relativos, então deve ser executado de dentro da pasta fsm_udp_tcp.
+```bash
+python -m unittest discover -s tests -v
+```
 
-## Cenários demonstrados
+Execute os comandos a partir da pasta `fsm_udp_tcp`, para que os caminhos relativos e os imports funcionem corretamente.
 
-- Estabelecimento de conexão TCP (three-way handshake)
-- Perda do SYN e do SYN-ACK com retransmissão por timeout
-- Fechamento normal e fechamento simultâneo da conexão
-- ACKs cumulativos, ACKs duplicados e Fast Retransmit
-- Datagrama UDP corrompido sendo descartado pelo checksum
-- Envio de dados para uma porta TCP fechada
+## Cenários de teste
 
-## Próximos passos
+1. Estabelecimento de conexão TCP (*three-way handshake*).
+2. Perda de SYN e timeout.
+3. Perda de SYN-ACK e timeout.
+4. Fechamento normal de conexão TCP.
+5. Fechamento simultâneo de conexão TCP.
+6. Detecção de três ACKs duplicados e seleção do segmento para retransmissão rápida.
+7. Envio de dados para porta TCP fechada, com geração de RST.
+8. Envio de 20 datagramas UDP em canal com perda configurada.
+9. Detecção de corrupção de datagrama por checksum.
+10. Comparação simplificada de entrega UDP e TCP em canal com perda.
 
-### Próxima etapa: preparar a transferência TCP
+Os cenários automatizados demonstram os comportamentos implementados no simulador. Alguns mecanismos, como a retransmissão rápida integrada ao canal, ainda requerem validação adicional para confirmar o comportamento completo.
 
-Trabalho no arquivo protocols/tcp.py, mantendo a interface e os testes atuais.
+## Resultados registrados
 
-- [ ] Número de sequência (SEQ) e confirmação (ACK)
-- [ ] Envio de segmentos de dados
-- [ ] Reconhecimento cumulativo dos segmentos recebidos
-- [ ] Retransmissão após timeout
-- [ ] Fast Retransmit após três ACKs duplicados
-- [ ] Registro das transmissões e retransmissões para visualizar na interface
+Na última execução dos testes:
+
+- A suíte automatizada terminou com 14 testes aprovados.
+- No cenário de perda UDP, foram recebidos 12 de 20 datagramas.
+- Na comparação simplificada, UDP recebeu 14 de 20 datagramas e TCP recebeu 20 de 20, com 8 tentativas adicionais.
+
+Esses números correspondem às execuções registradas e não representam uma garantia de resultado para todas as configurações do canal.
+
+## Limitações e melhorias futuras
+
+- Validar a retransmissão rápida de ponta a ponta, incluindo a entrega do segmento retransmitido pelo canal.
+- Integrar de forma mais completa o envio, a recepção e a retransmissão dos segmentos TCP.
+- Aprofundar a simulação do controle de fluxo e congestionamento, se exigidos pelo escopo final.
+- Registrar e apresentar de forma mais detalhada as transmissões, ACKs e retransmissões na interface gráfica.
+- Documentar os cenários com capturas de tela e resultados experimentais.
+
+## Repositório
+
+Código-fonte: https://github.com/Tiagonizer/AV2-Camada_de_transporte
