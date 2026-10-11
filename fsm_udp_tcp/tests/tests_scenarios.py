@@ -166,17 +166,33 @@ class TestTCPScenarios(unittest.TestCase):
         self.assertEqual(servidor.state, "TIME_WAIT")
 
     # Cenário 6: três ACKs duplicados acionam Fast Retransmit
+    
+    
     def test_cenario_6_fast_retransmit(self):
-        tcp = criar_tcp()
+        tcp = TCP()
+        tcp.trigger("connect")
+        tcp.trigger("receive_SYN_ACK")
 
-        tcp.receive_ack(5)
-        tcp.receive_ack(5)
-        tcp.receive_ack(5)
-        tcp.receive_ack(5)
+        segmento = tcp.send_data("Ola")
+        self.assertIsNotNone(segmento)
 
+        # O ACK 0 é o ACK anterior; três repetições
+        # devem disparar a retransmissão rápida.
+        ack_anterior = 0
+
+        tcp.receive_ack(ack_anterior)
+        tcp.receive_ack(ack_anterior)
+        tcp.receive_ack(ack_anterior)
+
+        retransmissao = tcp.get_retransmission()
+
+        self.assertIsNotNone(retransmissao)
+        self.assertEqual(retransmissao.seq, segmento.seq)
         self.assertTrue(tcp.fast_retransmit)
-        self.assertEqual(tcp.duplicate_ack_count, 3)
-        self.assertEqual(tcp.segment_to_retransmit, 5)
+
+        print("Cenário 6: retransmissão rápida validada.")
+
+
 
     def test_cenario_7_porta_fechada(self):
         servidor = criar_fsm_tcp()
